@@ -34,6 +34,8 @@ public class Main extends JavaPlugin {
     public NoCheat noCheat = null;
     public Logger logger = new Logger(this);
     public String APIKey = "crashdoomtest123";
+    public String gitVersion = "@@GITREVISION@@";
+    public String buildVersion = "@@BUILDVERSION@@";
     private ArrayList<String> activeUsernames = new ArrayList<String>();
 
     public void onDisable() {
@@ -41,6 +43,11 @@ public class Main extends JavaPlugin {
 	}
 
     public void onEnable() {
+        if (!gitVersion.contains("GITREVISION") || !buildVersion.contains("BUILDVERSION")) {
+            System.out.print("[MCAC] Using v" + this.getServer().getVersion() + " git-" + gitVersion + " b" + buildVersion + "bamboo");
+        } else {
+            System.out.print("[MCAC] Using v" + this.getServer().getVersion());
+        }
         System.out.print("[MCAC] Please wait.. Starting.");
 
 		pluginManager = getServer().getPluginManager();

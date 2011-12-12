@@ -3,6 +3,7 @@ package uk.co.crashcraft.mcma;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import uk.co.crashcraft.mcma.callback.Callback;
@@ -77,6 +78,10 @@ public class Main extends JavaPlugin {
         pluginManager.registerEvent(Type.PLAYER_PRELOGIN, new PlayerListener () {
             @Override
             public void onPlayerPreLogin(PlayerPreLoginEvent event) {
+                if (!craftServer.getServer().onlineMode) {
+                    logger.log(Logger.logState.FATAL, "You must be running in online mode!");
+                    return;
+                }
                 String playerName = event.getName();
                 JSONHandler webHandle = new JSONHandler( Main.this );
                 HashMap<String, String> url_items = new HashMap<String, String>();
@@ -99,6 +104,15 @@ public class Main extends JavaPlugin {
                 activeUsernames.add(playerName);
             }
         }, Priority.Highest, this);
+
+        pluginManager.registerEvent(Type.PLAYER_JOIN, new PlayerListener () {
+            @Override
+            public void onPlayerJoin(PlayerJoinEvent event) {
+                Player target = event.getPlayer();
+                target.sendMessage(ChatColor.AQUA + "[MCAC] " + ChatColor.RED + "This server is MCAC protected!");
+                // Disclaimer: Upon seeing this message, or this message being sent from the server the user is responsible fully for his/her actions and the resulting MCAC punishment
+            }
+        }, Priority.Monitor, this);
 
         pluginManager.registerEvent(Type.PLAYER_QUIT, new PlayerListener () {
             @Override
@@ -124,23 +138,37 @@ public class Main extends JavaPlugin {
 		return commandHandler.execCommand( command.getName(), args, sender );
 	}
 
+    /**
+     * Sends a message to all users with the mcac.view permission node
+     * @param msg
+     */
     public void broadcastView(String msg){
 		for( Player player: this.getServer().getOnlinePlayers() ){
 			if(bukkitPermissions.isAllow(player.getWorld().getName(), player.getName(), "view")){
-				player.sendMessage( "[MCAC] " + msg );
+				player.sendMessage(ChatColor.AQUA + "[MCAC] " + ChatColor.WHITE + msg );
 			}
 		}
 	}
 
+    /**
+     * Sends a message to the specified player
+     * @param Player
+     * @param msg
+     */
     public void broadcastPlayer( String Player, String msg ){
 		Player target = this.getServer().getPlayer(Player);
 		if(target!=null){
-			target.sendMessage( "[MCAC] " + msg );
+			target.sendMessage(ChatColor.AQUA + "[MCAC] " + ChatColor.WHITE + msg );
 		}else{
 			System.out.print( "[MCAC] " +  msg );
 		}
 	}
 
+    /**
+     * Returns a boolean depending on if the HashMap contains an error response
+     * @param response
+     * @return boolean
+     */
     public boolean hasErrored (HashMap<String, String> response) {
 		if (response.containsKey("error")) {
 			String error = response.get("error");
@@ -160,6 +188,11 @@ public class Main extends JavaPlugin {
 		}
 	}
 
+    /**
+     * Returns the plugin interface for MCBans
+     * @param pluginName
+     * @return Plugin
+     */
     public Plugin pluginInterface( String pluginName ){
 		return this.getServer().getPluginManager().getPlugin(pluginName);
 	}

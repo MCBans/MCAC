@@ -9,7 +9,7 @@ import uk.co.crashcraft.mcma.Main;
 
 public class Disable implements CommandExecutor{
 
-    private Main MCAC;
+    private final Main MCAC;
 
     public Disable(Main MCAC){
         this.MCAC=MCAC;
@@ -17,8 +17,8 @@ public class Disable implements CommandExecutor{
     
     @Override
     public boolean onCommand(CommandSender arg0, Command arg1, String arg2, String[] arg3) {
-        MCAC.broadcastView(ChatColor.RED + "Stopping..");
-        MCAC.getServer().getPluginManager().disablePlugin(MCAC.pluginInterface("MCAC"));
+        this.MCAC.broadcastView(ChatColor.RED + "Stopping..");
+        this.MCAC.getServer().getPluginManager().disablePlugin(this.MCAC.pluginInterface("MCAC"));
         return true;
     }
 

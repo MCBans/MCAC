@@ -9,7 +9,7 @@ import uk.co.crashcraft.mcma.log.MCACLogger;
 
 public class Test implements CommandExecutor{
 
-    private Main MCAC;
+    private final Main MCAC;
 
     public Test(Main MCAC){
         this.MCAC=MCAC;
@@ -17,8 +17,8 @@ public class Test implements CommandExecutor{
     
     @Override
     public boolean onCommand(CommandSender arg0, Command arg1, String arg2, String[] arg3) {
-        MCAC.logger.log(MCACLogger.logState.NOTICE, "Dialing Home...");
-        MCAC.callback.forceRequest();
+        this.MCAC.logger.log(MCACLogger.logState.NOTICE, "Dialing Home...");
+        this.MCAC.callback.forceRequest();
         return true;
     }
 

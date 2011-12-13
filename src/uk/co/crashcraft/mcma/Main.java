@@ -185,9 +185,9 @@ public class Main extends JavaPlugin {
 	}
     
     public boolean onlineCheck(){
-    if (!this.craftServer.getServer().onlineMode) {
-        this.logger.log(MCACLogger.logState.FATAL, "You must be running in online mode!");
-        return false;
-    } return true;
+        if (!this.craftServer.getServer().onlineMode) {
+            this.logger.log(MCACLogger.logState.FATAL, "You must be running in online mode!");
+            return false;
+        } return true;
     }
 }

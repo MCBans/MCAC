@@ -34,56 +34,58 @@ public class Main extends JavaPlugin {
     public String APIKey = "crashdoomtest123";
     public String gitVersion = "@@GITREVISION@@";
     public String buildVersion = "@@BUILDVERSION@@";
-    private ArrayList<String> activeUsernames = new ArrayList<String>();
+    private final ArrayList<String> activeUsernames = new ArrayList<String>();
 
+    @Override
     public void onDisable() {
-        logger.log("Shutting Down..");
+        this.logger.log("Shutting Down...");
 	}
 
+    @Override
     public void onEnable() {
-        if (!gitVersion.contains("GITREVISION") || !buildVersion.contains("BUILDVERSION")) {
-            logger.log("Using v" + this.getServer().getVersion() + " git-" + gitVersion + " b" + buildVersion + "bamboo");
+        if (!this.gitVersion.contains("GITREVISION") || !this.buildVersion.contains("BUILDVERSION")) {
+            this.logger.log("Using v" + this.getServer().getVersion() + " git-" + this.gitVersion + " b" + this.buildVersion + "bamboo");
         } else {
-            logger.log("Using v" + this.getServer().getVersion());
+            this.logger.log("Using v" + this.getServer().getVersion());
         }
-        logger.log("Please wait.. Starting.");
+        this.logger.log("Please wait.. Starting.");
 
-		pluginManager = getServer().getPluginManager();
-        craftServer = (CraftServer) getServer();
+		this.pluginManager = this.getServer().getPluginManager();
+        this.craftServer = (CraftServer) this.getServer();
 
-        if (!craftServer.getServer().onlineMode) {
-            logger.log(MCACLogger.logState.FATAL, "You must be running in online mode!");
+        if (!this.craftServer.getServer().onlineMode) {
+            this.logger.log(MCACLogger.logState.FATAL, "You must be running in online mode!");
             return;
         }
 
-        logger.log(MCACLogger.logState.INFO, "Checking Compatibility");
+        this.logger.log(MCACLogger.logState.INFO, "Checking Compatibility");
 
-        Plugin noCheatPlug = pluginManager.getPlugin("NoCheat");
+        final Plugin noCheatPlug = this.pluginManager.getPlugin("NoCheat");
         if (noCheatPlug == null) {
-            logger.log(MCACLogger.logState.FATAL, "NoCheat could not be found!");
+            this.logger.log(MCACLogger.logState.FATAL, "NoCheat could not be found!");
             return;
         }
 
-        noCheat = (NoCheat) noCheatPlug;
+        this.noCheat = (NoCheat) noCheatPlug;
 
-        logger.log(MCACLogger.logState.INFO, "Found NoCheat");
+        this.logger.log(MCACLogger.logState.INFO, "Found NoCheat");
 
-        logger.log(MCACLogger.logState.INFO, "Hooking Listeners");
+        this.logger.log(MCACLogger.logState.INFO, "Hooking Listeners");
 
-        pluginManager.registerEvent(Type.PLAYER_PRELOGIN, new PlayerListener () {
+        this.pluginManager.registerEvent(Type.PLAYER_PRELOGIN, new PlayerListener () {
             @Override
             public void onPlayerPreLogin(PlayerPreLoginEvent event) {
-                if (!craftServer.getServer().onlineMode) {
-                    logger.log(MCACLogger.logState.FATAL, "You must be running in online mode!");
+                if (!Main.this.craftServer.getServer().onlineMode) {
+                    Main.this.logger.log(MCACLogger.logState.FATAL, "You must be running in online mode!");
                     return;
                 }
-                String playerName = event.getName();
-                JSONHandler webHandle = new JSONHandler( Main.this );
-                HashMap<String, String> url_items = new HashMap<String, String>();
+                final String playerName = event.getName();
+                final JSONHandler webHandle = new JSONHandler( Main.this );
+                final HashMap<String, String> url_items = new HashMap<String, String>();
                 url_items.put("player", playerName);
                 url_items.put("playerip", event.getAddress().getHostAddress());
                 url_items.put("exec", "playerConnect");
-                HashMap<String, String> serverData = webHandle.mainRequest(url_items);
+                final HashMap<String, String> serverData = webHandle.mainRequest(url_items);
                 try {
                     if (serverData.containsKey("isBanned")) {
                         if (serverData.get("isBanned").equals("true")) {
@@ -91,16 +93,16 @@ public class Main extends JavaPlugin {
                             return;
                         }
                     } else {
-                        hasErrored(serverData);
+                        Main.this.hasErrored(serverData);
                     }
-                } catch (NullPointerException e) {
-                    logger.log(MCACLogger.logState.WARNING, "Unable to connect to the MCAC Server!");
+                } catch (final NullPointerException e) {
+                    Main.this.logger.log(MCACLogger.logState.WARNING, "Unable to connect to the MCAC Server!");
                 }
-                activeUsernames.add(playerName);
+                Main.this.activeUsernames.add(playerName);
             }
         }, Priority.Highest, this);
 
-        pluginManager.registerEvent(Type.PLAYER_JOIN, new PlayerListener () {
+        this.pluginManager.registerEvent(Type.PLAYER_JOIN, new PlayerListener () {
             @Override
             public void onPlayerJoin(PlayerJoinEvent event) {
                 event.getPlayer().sendMessage(ChatColor.AQUA + "[MCAC] " + ChatColor.RED + "This server is MCAC protected!");
@@ -108,28 +110,28 @@ public class Main extends JavaPlugin {
             }
         }, Priority.Monitor, this);
 
-        pluginManager.registerEvent(Type.PLAYER_QUIT, new PlayerListener () {
+        this.pluginManager.registerEvent(Type.PLAYER_QUIT, new PlayerListener () {
             @Override
             public void onPlayerQuit(PlayerQuitEvent event) {
-                String playerName = event.getPlayer().getName();
-                activeUsernames.remove(playerName);
+                final String playerName = event.getPlayer().getName();
+                Main.this.activeUsernames.remove(playerName);
             }
         }, Priority.Monitor, this);
         
         
         //Registering commands!
-        getCommand("disable").setExecutor(new Disable(this));
-        getCommand("test").setExecutor(new Test(this));
+        this.getCommand("disable").setExecutor(new Disable(this));
+        this.getCommand("test").setExecutor(new Test(this));
 
         
-        logger.log(MCACLogger.logState.INFO, "Communicating with Master Server");
+        this.logger.log(MCACLogger.logState.INFO, "Communicating with Master Server");
 
-        callback = new Callback(this);
+        this.callback = new Callback(this);
 
-        callback.forceRequest();
+        this.callback.forceRequest();
 
 
-        logger.log(MCACLogger.logState.INFO, "All Systems Operational!");
+        this.logger.log(MCACLogger.logState.INFO, "All Systems Operational!");
     }
 
 
@@ -138,7 +140,7 @@ public class Main extends JavaPlugin {
      * @param msg
      */
     public void broadcastView(String msg){
-		for( Player player: this.getServer().getOnlinePlayers() ){
+		for( final Player player: this.getServer().getOnlinePlayers() ){
 			if(player.hasPermission("mcac.view")){
 				player.sendMessage(ChatColor.AQUA + "[MCAC] " + ChatColor.WHITE + msg );
 			}
@@ -151,11 +153,11 @@ public class Main extends JavaPlugin {
      * @param msg
      */
     public void broadcastPlayer( String Player, String msg ){
-		Player target = this.getServer().getPlayer(Player);
+		final Player target = this.getServer().getPlayer(Player);
 		if(target!=null){
 			target.sendMessage(ChatColor.AQUA + "[MCAC] " + ChatColor.WHITE + msg );
 		}else{
-		    logger.log( msg );
+		    this.logger.log( msg );
 		}
 	}
 
@@ -166,16 +168,16 @@ public class Main extends JavaPlugin {
      */
     public boolean hasErrored (HashMap<String, String> response) {
 		if (response.containsKey("error")) {
-			String error = response.get("error");
+			final String error = response.get("error");
 			if (error.contains("Server Disabled")) {
-				broadcastView(ChatColor.RED + "MCAC Abuse Detected");
-				broadcastView("Abuse of the MCAC System was detected and resulted in this server being blacklisted.");
-				logger.log(MCACLogger.logState.SEVERE, "The server API key has been disabled by an MCAC ");
-				logger.log(MCACLogger.logState.FATAL, "To appeal this decision, please contact an administrator");
+				this.broadcastView(ChatColor.RED + "MCAC Abuse Detected");
+				this.broadcastView("Abuse of the MCAC System was detected and resulted in this server being blacklisted.");
+				this.logger.log(MCACLogger.logState.SEVERE, "The server API key has been disabled by an MCAC ");
+				this.logger.log(MCACLogger.logState.FATAL, "To appeal this decision, please contact an administrator");
 			} else {
-				broadcastView( ChatColor.RED + "Unexpected reply from MCAC API!");
-				logger.log(MCACLogger.logState.SEVERE, "API returned an invalid error:");
-				logger.log(MCACLogger.logState.SEVERE, "Server said: " + error);
+				this.broadcastView( ChatColor.RED + "Unexpected reply from MCAC API!");
+				this.logger.log(MCACLogger.logState.SEVERE, "API returned an invalid error:");
+				this.logger.log(MCACLogger.logState.SEVERE, "Server said: " + error);
 			}
 			return true;
 		} else {

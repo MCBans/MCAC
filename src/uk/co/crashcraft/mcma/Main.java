@@ -44,39 +44,29 @@ public class Main extends JavaPlugin {
     @Override
     public void onEnable() {
         if (!this.gitVersion.contains("GITREVISION") || !this.buildVersion.contains("BUILDVERSION")) {
-            this.logger.log("Using v" + this.getServer().getVersion() + " git-" + this.gitVersion + " b" + this.buildVersion + "bamboo");
+            this.logger.log("Initializing v" + this.getServer().getVersion() + " git-" + this.gitVersion + " b" + this.buildVersion + "bamboo");
         } else {
-            this.logger.log("Using v" + this.getServer().getVersion());
+            this.logger.log("Initializing v" + this.getServer().getVersion());
         }
-        this.logger.log("Please wait.. Starting.");
 
 		this.pluginManager = this.getServer().getPluginManager();
         this.craftServer = (CraftServer) this.getServer();
 
-        if (!this.craftServer.getServer().onlineMode) {
-            this.logger.log(MCACLogger.logState.FATAL, "You must be running in online mode!");
+        if(!this.onlineCheck()){
             return;
         }
-
-        this.logger.log(MCACLogger.logState.INFO, "Checking Compatibility");
 
         final Plugin noCheatPlug = this.pluginManager.getPlugin("NoCheat");
         if (noCheatPlug == null) {
             this.logger.log(MCACLogger.logState.FATAL, "NoCheat could not be found!");
             return;
         }
-
         this.noCheat = (NoCheat) noCheatPlug;
-
-        this.logger.log(MCACLogger.logState.INFO, "Found NoCheat");
-
-        this.logger.log(MCACLogger.logState.INFO, "Hooking Listeners");
 
         this.pluginManager.registerEvent(Type.PLAYER_PRELOGIN, new PlayerListener () {
             @Override
             public void onPlayerPreLogin(PlayerPreLoginEvent event) {
-                if (!Main.this.craftServer.getServer().onlineMode) {
-                    Main.this.logger.log(MCACLogger.logState.FATAL, "You must be running in online mode!");
+                if(!Main.this.onlineCheck()){
                     return;
                 }
                 final String playerName = event.getName();
@@ -172,8 +162,8 @@ public class Main extends JavaPlugin {
 			if (error.contains("Server Disabled")) {
 				this.broadcastView(ChatColor.RED + "MCAC Abuse Detected");
 				this.broadcastView("Abuse of the MCAC System was detected and resulted in this server being blacklisted.");
-				this.logger.log(MCACLogger.logState.SEVERE, "The server API key has been disabled by an MCAC ");
-				this.logger.log(MCACLogger.logState.FATAL, "To appeal this decision, please contact an administrator");
+				this.logger.log(MCACLogger.logState.SEVERE, "The server API key has been disabled by MCAC.");
+				this.logger.log(MCACLogger.logState.FATAL, "To appeal this decision, please contact an administrator.");
 			} else {
 				this.broadcastView( ChatColor.RED + "Unexpected reply from MCAC API!");
 				this.logger.log(MCACLogger.logState.SEVERE, "API returned an invalid error:");
@@ -193,4 +183,11 @@ public class Main extends JavaPlugin {
     public Plugin pluginInterface( String pluginName ){
 		return this.getServer().getPluginManager().getPlugin(pluginName);
 	}
+    
+    public boolean onlineCheck(){
+        if (!this.craftServer.getServer().onlineMode) {
+            this.logger.log(MCACLogger.logState.FATAL, "You must be running in online mode!");
+            return false;
+        } return true;
+    }
 }

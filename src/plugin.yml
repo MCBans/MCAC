@@ -6,3 +6,6 @@ commands:
   test:
     description: testing
     usage: /<command>
+  disable:
+    description: testing
+    usage: /<command>
